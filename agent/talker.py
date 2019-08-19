@@ -524,7 +524,7 @@ class TalkerAgent(object):
             return
         return first_seen
 
-    def fetch_new_jobs(self):
+    def fetch_new_jobs(self, tries=1):
         """
         format of job
             dict(
@@ -532,33 +532,44 @@ class TalkerAgent(object):
                 cmd=["/bin/bash", '-c', "for i in $(seq 2);do sleep 1; echo $i; done"],
             )
         """
-        last_reported = 0
-        jobs_key = 'commands-%s' % self.host_id
-        while not self.stop_fetching:
-            new_jobs = []
-            ret = self.redis.blpop([jobs_key], timeout=1)
-            if not ret:
-                now = time.time()
-                self.scrub_seen_jobs(now=now)
-                if now - last_reported > 10:
-                    logger.debug("No new jobs...")
-                    last_reported = now
-                continue
-            _, job_data_raw = ret
-            new_jobs.append(job_data_raw)
+        try:
+            last_reported = 0
+            jobs_key = 'commands-%s' % self.host_id
+            while not self.stop_fetching:
+                new_jobs = []
+                ret = self.redis.blpop([jobs_key], timeout=1)
+                tries = 1
+                if not ret:
+                    now = time.time()
+                    self.scrub_seen_jobs(now=now)
+                    if now - last_reported > 10:
+                        logger.debug("No new jobs...")
+                        last_reported = now
+                    continue
+                _, job_data_raw = ret
+                new_jobs.append(job_data_raw)
 
-            # Could be that multiple jobs were sent, checking with lrange
-            additional_jobs = self.redis.lrange(jobs_key, 0, -1)
-            if len(additional_jobs):
-                self.redis.ltrim(jobs_key, len(additional_jobs), -1)
+                # Could be that multiple jobs were sent, checking with lrange
+                additional_jobs = self.redis.lrange(jobs_key, 0, -1)
+                if len(additional_jobs):
+                    self.redis.ltrim(jobs_key, len(additional_jobs), -1)
 
-            new_jobs.extend(additional_jobs)
-            logger.debug("Got %s jobs", len(new_jobs))
-            for job in new_jobs:
-                self.start_job(job.decode("utf-8"))
+                new_jobs.extend(additional_jobs)
+                logger.debug("Got %s jobs", len(new_jobs))
+                for job in new_jobs:
+                    self.start_job(job.decode("utf-8"))
 
-        self.fetching_stopped.set()
-        logger.info("stopped fetching new jobs")
+            self.fetching_stopped.set()
+            logger.info("stopped fetching new jobs")
+        except Exception as e:
+            if tries == 3:
+                self.exc_info = sys.exc_info()
+                logger.debug("Exception number '{}' in 'fetch_new_jobs' - exiting...".format(tries))
+            else:
+                logger.debug("Exception - '{}' in 'fetch_new_jobs' - try number {}".format(e.__class__.__name__, tries))
+                tries += 1
+                time.sleep(10)
+                self.fetch_new_jobs(tries)
 
     def scrub_seen_jobs(self, now):
         if now - self.last_scrubbed < 10:
