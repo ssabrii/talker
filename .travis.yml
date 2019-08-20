@@ -1,32 +1,17 @@
-language: python
-python:
-  - "3.4"
-  - "3.5"
-  - "3.6"
-  - "3.7"
-script:
-  - pytest tests/uts -v
-  - pytest tests/integration -v
-dist: xenial
-before_install:
-  - export TALKER_AGENT_VERSION=$(cat VERSION)
-  - cd tests/integration
-  - export TALKER_HOST_ID=MyHostId
-  - docker-compose up --no-start
-  - docker-compose start
-  - docker-compose ps
-  - cd ../../
-install:
-  - pip install .[test]
-deploy:
-  provider: pypi
-  user: wekaio-pypi
-  password:
-    secure: oJATvgDncF6BWrVwQERAkwzNwm5UYmLbEUdMMWEAReGhKjNC/FpmBVwtzvObWjkfXXKSWyCm+gc7bYX8GRDDtNLfO5PkOFaMIDS31cht9W7tbVbc8FHVDNZ0Z09ZQZzaEBUnSZQAJKTTa4pc0BcdJNzVABn5B5CxSPDz9S6rO5vFOQtQNpGqivUVF0BKSNce8Je5ZUvb5WwMuvTM2WeNDyPlwdcCsuwqSjgeprBWNd1+62bjoG9dKQz1R/yylzZ2aoQ8x4+SkTLbP9zewW5eNtVomz5PFXG3NLFJLU2aExpib1n8lbK6EmUCp+gDwR+sHAA49jbo6cm92N6scJ+TI6rsuPCRLHCIpxXrhp5/t/kETFq+y8FJgFDH0k9RLIwefjHUZuqxfbRs32v3gpZIUqwXB4jrCeY8IClfWW2WvPyfGaxoMMNKd8cr3s6ZzNrxhq091JcJHlBNGHX2ev6tyTSLy2eNqIo2ueZyrDmsVWYWT+VoeHWo/0q/F5SxxnuuwgraDvez/Fpontr2qIBKShwZoFpSEcs/m57nekVhtEiJEwtbYUapk5iLlC3iMELxnjvsEfCT/df/HWQvEuBAwX90nIxWRrGC8B7bfdKXBmUjJ/qBGsOrL0F+Gj8iQRKXl87rCN4GoGLG7XXDM5f/juNtcrhlU5zEDMslYgmw1Wg=
-  on:
-    tags: true
-    branch: master
-  skip_existing: true
-notifications:
-  slack:
-    secure: jSvGUdxwajD0ERxNzqLQ9lIIbK0xLMN1+asXiED/NMUU7BHnX4SGYUltHN7RxXuPIcHX/zd9UhDTnXBZMEee8JQ2XEfJGrfsivWjG7EVL9tRoIjsorNhPOm+WZF7w8CQ23is1PlDDT7RjiGr/EtxaCDkq1evGqYPJwgpTXL8fMuHPdHMHGBjHMAGMavoR2u6ZtbSs3RZc0i/n5oqFiRRmhsuZIdRLKlMqDEyac0k1tpvZurJW3BmoZsXLYramXVXlKBZ5q5oTRAZF5XUFQIIfbxJRrTE2Bkk+CAiCA80RjRONgCykFQkgg/PcD+ZlobAAj1lbwfXmp7o/hv3bBruSQ/E+XmxN0BXS3QDoejxDqunm9N2WBivqc6mu8nOZUKmwY+pZVRglYA4xRwGo1ZJ2nmymmu1U44mgNUboea42Rl1DAJSbfdUFnqT9y1BLNNpepg8FUlqFRQYZxm4pGf1i2UCMXlp2Xvw7eVirdlz8ySUMSGDG/t9qm2TytSRL4MKlnoesjTDXhPGtjpubN86QjOrvmF/34MzjHe7lOagZNXlpOsSiQGl3tvo2lm6ln+QJCtqvWzE/qtDg+p3o1BMuvNPYrFG1lJkN636lvmErEZLOI9fSvRrpLf2deTqZ1+od9+iofJi8vSQRZXjLtfkcw+yyzddhegk4jJ6JNCBdJQ=
+language: python 
+python: 
+ - "3.4" 
+ - "3.5" 
+ - "3.6" 
+ - "3.7"
+env:
+ - TEST_SUITE="tests/uts" -v
+ - TEST_SUITE="tests/integration" -v
+ 
+jobs: 
+include: 
+ - stage: "Tests" 
+name: "Unit Tests" 
+script: pytest $TEST_SUITE -v 
+ - script: pytest $TEST_SUITE -v 
+name: "Integration Tests"
