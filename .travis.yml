@@ -9,9 +9,10 @@ env:
  - TEST_SUITE="tests/integration" -v
  
 jobs: 
-include: 
- - stage: "Tests" 
-name: "Unit Tests" 
-script: pytest $TEST_SUITE -v 
+ include: 
+  - stage: "Tests" 
+    name: "Unit Tests" 
+    script: pytest $TEST_SUITE -v 
+
  - script: pytest $TEST_SUITE -v 
-name: "Integration Tests"
+   name: "Integration Tests"
