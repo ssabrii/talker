@@ -11,10 +11,10 @@ env:
   - "TEST_SUITE=\"tests/integration\" -v"
 jobs: 
   include: 
-    - 
-      name: "Unit Tests"
+    - name: "Unit Tests"
       script: "pytest $TEST_SUITE -v"
-      stage: Tests
+
     - 
       name: "Integration Tests"
       script: "pytest $TEST_SUITE -v"
+
